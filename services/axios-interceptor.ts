@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosHeaders, AxiosInstance, AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse, InternalAxiosRequestConfig, RawAxiosRequestHeaders } from 'axios';
 
 
 /**
@@ -16,13 +16,13 @@ export class Api {
    */
   public constructor(config?: AxiosRequestConfig) {
     this.api = axios.create(config);
-    this.api.interceptors.request.use( async (config: AxiosRequestConfig) => {
+    this.api.interceptors.request.use( async (config: InternalAxiosRequestConfig<AxiosRequestConfig>) => {
       const token = localStorage.getItem('access_token');
       if (!(token)) {
         const headers = {
           /* eslint no-unneeded-ternary: "error" */
           Authorization: token,
-        };
+        } as unknown as AxiosHeaders;
         if (config.headers) {
           config.headers = Object.assign(headers, config.headers);
         } else {

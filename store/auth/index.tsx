@@ -1,11 +1,22 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { login } from "../../services/apis/auth";
 import { IAction } from "..";
+import { AuthResult } from "../../models/auth";
+interface LoginParam {
+  userName: string,
+  password: string,
+}
 
-export const loginAction = createAsyncThunk("auth/login", async (userName: string, password: string) => {
-  const res = await login(userName, password);
-  return res;
-});
+export const loginAction = createAsyncThunk<
+  AuthResult,
+  LoginParam
+>(
+  "auth/login",
+  async (payload) => {
+    const { userName, password } = payload
+    const res = await login(userName, password);
+    return res;
+  });
 
 const initialState = {
   isAuth: false,
@@ -16,9 +27,7 @@ export type AuthState = typeof initialState;
 
 const authSlice = createSlice({
   name: "authReducer",
-  initialState: {
-    isAuth: false,
-  },
+  initialState,
   reducers: {
     handleSignOut: (state: AuthState = initialState, action: IAction) => {
       state.isAuth = false;
@@ -26,15 +35,15 @@ const authSlice = createSlice({
       // clear from localStorage
     },
   },
-  extraReducers: {
-    [loginAction.fulfilled]: (state: AuthState = initialState, action: IAction) => {
-      const token = action?.payload?.data?.data?.accessToken;
+  extraReducers: (builder) => {
+    builder.addCase(loginAction.fulfilled, (state, { payload }) => {
+      const token = payload?.accessToken;
 
       state.isAuth = true;
-
       // save token localStorage
       // ...
-    },
+
+    })
   },
 });
 
